@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROLL COLOR DICE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800;900&family=Lilita+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-overlay: rgba(0, 0, 0, 0.25);
+            --bg-color: #0d1117;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: linear-gradient(var(--bg-overlay), var(--bg-overlay)), 
+                        url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+            color: #ffffff;
+            font-family: 'Fredoka', 'Arial Rounded MT Bold', sans-serif;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            overflow-x: hidden;
+        }
+
+        /* SPAWN ANİMASYONU */
+        @keyframes instantSpawn {
+            0% { transform: scale(0.92); opacity: 0.5; }
+            50% { transform: scale(1.03); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .spawn-anim {
+            animation: instantSpawn 0.25s ease-out forwards;
+        }
+
+        /* --- ÜST EKRAN (ROLLING SCENE) --- */
+        .top-scene-section {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-sizing: border-box;
+            padding-bottom: 120px;
+        }
+
+        .scene-title {
+            font-family: 'Lilita One', 'Fredoka', sans-serif;
+            font-size: 52px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8), 0 0 15px rgba(255, 255, 255, 0.6);
+            margin-bottom: 25px;
+            animation: pulseText 1s infinite alternate;
+        }
+
+        @keyframes pulseText {
+            from { transform: scale(0.98); opacity: 0.9; }
+            to { transform: scale(1.02); opacity: 1; }
+        }
+
+        .scene-dice-container {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        .scene-dice {
+            width: 85px;
+            height: 85px;
+            border-radius: 20px;
+            border: 4px solid #ffffff;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6), 0 0 15px rgba(255,255,255,0.4);
+            background: #ffffff;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: filter 0.3s ease, transform 0.2s;
+        }
+
+        .scene-dice::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0, 0, 0, 0.15);
+            border-radius: 50%;
+        }
+
+        .scene-dice.blurred { 
+            filter: blur(12px); 
+        }
+
+        /* --- ANA OYUN ALANI --- */
+        .main-game-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 15px;
+            box-sizing: border-box;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            width: 100%;
+            max-width: 1240px;
+            position: relative;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            background: #18191c;
+            padding: 22px 30px;
+            border-radius: 24px;
+            box-shadow: 0 10px 0px #0a0a0c, 0 15px 35px rgba(0,0,0,0.6);
+            border: 4px solid #2d2f34;
+            flex-grow: 1;
+            max-width: 620px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .header-title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .title-logo {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+        }
+
+        .streamers-panel {
+            background: #18191c;
+            border-radius: 20px;
+            border: 3px solid #2d2f34;
+            box-shadow: 0 10px 0px #0a0a0c, 0 15px 30px rgba(0,0,0,0.6);
+            width: 240px;
+            padding: 16px 12px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .streamers-header {
+            font-family: 'Lilita One', 'Fredoka', sans-serif;
+            font-size: 19px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffffff;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+            margin: 0;
+        }
+
+        .streamers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        .streamer-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #ffd700;
+            object-fit: cover;
+            background: #111;
+            flex-shrink: 0;
+        }
+
+        .streamer-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .streamer-name-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .streamer-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+
+        .verified-badge {
+            width: 13px;
+            height: 13px;
+            background: #ffd700;
+            color: #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: 900;
+        }
+
+        .streamer-tag {
+            font-size: 11px;
+            color: #aaaaaa;
+            font-weight: 600;
+        }
+
+        .title {
+            font-family: 'Lilita One', 'Fredoka', sans-serif;
+            font-size: 38px;
+            letter-spacing: 2px;
+            color: #ffffff;
+            text-shadow: 0px 3px 0px #b0b0b0, 0px 6px 0px #707070, 0px 8px 12px rgba(0,0,0,0.8);
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .top-controls {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .top-select, .top-label {
+            padding: 8px 12px;
+            font-size: 14px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            border-radius: 10px;
+            border: 2px solid #ffffff;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* --- KARE ZAR TASARIMI --- */
+        .dice-container {
+            display: flex;
+            gap: 14px;
+            margin-top: 5px;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            min-height: 120px;
+        }
+
+        .dice-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dice {
+            width: 85px;
+            height: 85px;
+            border-radius: 20px;
+            border: 4px solid #ffffff;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: filter 0.3s ease;
+        }
+
+        .dice::after {
+            content: '';
+            width: 24px;
+            height: 24px;
+            background-color: #ffffff;
+            border-radius: 50%;
+        }
+
+        .dice.blurred { filter: blur(12px); }
+        .dice.blurred:hover { filter: blur(0px); transform: scale(1.08); }
+
+        .color-label {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes gPeryaRoll {
+            0% { transform: scale(1) rotate(0deg); }
+            20% { transform: scale(0.92) rotate(-10deg) translateY(4px); }
+            40% { transform: scale(1.05) rotate(12deg) translateY(-4px); }
+            60% { transform: scale(0.95) rotate(-8deg) translateY(2px); }
+            80% { transform: scale(1.02) rotate(5deg) translateY(-2px); }
+            100% { transform: scale(1) rotate(0deg) translateY(0); }
+        }
+
+        .rolling {
+            animation: gPeryaRoll 0.15s infinite linear;
+        }
+
+        .score-board {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .score-side { display: flex; flex-direction: column; gap: 5px; }
+
+        .score-btn {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 5px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            cursor: pointer;
+        }
+
+        .minus-side .score-btn { color: #ff80ab; }
+        .plus-side .score-btn { color: #80d8ff; }
+
+        .center-score {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        button.roll-btn {
+            width: 100%;
+            padding: 12px 18px;
+            font-size: 24px;
+            font-weight: 900;
+            font-family: 'Fredoka', sans-serif;
+            letter-spacing: 2px;
+            background: linear-gradient(180deg, #ffd000 0%, #ff9100 100%);
+            color: #ffffff;
+            border: 3.5px solid #ffe875;
+            border-radius: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            box-shadow: 0 6px 0px #b35900, 0 8px 18px rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+        }
+
+        button.roll-btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+        button.roll-btn:active { transform: translateY(4px); box-shadow: 0 2px 0px #b35900; }
+
+        .possible-colors-bar {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 7px 10px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: #e0e0e0;
+            box-sizing: border-box;
+        }
+
+        /* SOL VE SAĞ KONTROL PANELLERİ */
+        .settings-panel-left {
+            position: fixed;
+            bottom: 25px;
+            left: 40px;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 8px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .settings-panel-right {
+            position: fixed;
+            bottom: 25px;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 8px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .settings-panel-left select, .settings-panel-right select {
+            padding: 4px 8px;
+            font-size: 13px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            border-radius: 6px;
+            border: 1.5px solid #ffffff;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            outline: none;
+            cursor: pointer;
+            min-width: 90px;
+        }
+
+        .history-container {
+            width: 100%;
+            max-height: 150px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 10px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-sizing: border-box;
+        }
+
+        .history-title { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+        .history-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+        .history-item { font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 8px; }
+        .history-colors { display: flex; gap: 8px; }
+        .color-dot { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid #fff; transition: filter 0.3s; }
+        .color-dot.blurred { filter: blur(5px); }
+    </style>
+</head>
+<body>
+
+    <!-- ÜST EKRAN (ROLLING SƏHNƏSİ) -->
+    <div class="top-scene-section" id="topScene">
+        <div class="scene-title" id="sceneTitle">LET'S SEE...</div>
+        <div class="scene-dice-container" id="sceneDiceContainer"></div>
+    </div>
+
+    <!-- ANA OYUN PANELİ -->
+    <div class="main-game-section" id="mainSection">
+        <div class="layout-wrapper" id="layoutWrapper">
+            
+            <!-- SOL PANEL (6 YAYINCI) -->
+            <div class="streamers-panel" onclick="preventRoll(event)">
+                <h2 class="streamers-header">Our Top Streamers</h2>
+                <div class="streamers-list">
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">RAKANO</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@rakanootrades</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">MARIOKS</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@marioks_12</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">NEXUS</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@nexus_live</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">BLAZE</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@blaze_stream</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1614680376593-902f749f7ba0?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">KRONOS</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@kronos_tv</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">VIPER</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@viper_gaming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MERKEZ PANEL -->
+            <div class="main-container">
+                <div class="header-title-container">
+                    <h1 class="title">ROLL COLOR DICE</h1>
+                </div>
+
+                <div class="top-controls">
+                    <select id="diceCountSelect" class="top-select" onchange="updateDiceCount()" onclick="preventRoll(event)">
+                        <option value="1">1 DICE</option>
+                        <option value="2">2 DICE</option>
+                        <option value="3">3 DICE</option>
+                        <option value="4" selected>4 DICE</option>
+                    </select>
+
+                    <div class="top-label">COLOR DICE</div>
+
+                    <select id="bgColorSelect" class="top-select" onchange="changeBgColor()" onclick="preventRoll(event)">
+                        <option value="default" selected>Ocean</option>
+                        <option value="black">Black</option>
+                        <option value="blue">Blue</option>
+                        <option value="green">Green</option>
+                        <option value="yellow">Yellow</option>
+                    </select>
+
+                    <select id="blurToggle" class="top-select" onchange="toggleBlur()" onclick="preventRoll(event)">
+                        <option value="on" selected>BLUR: ON</option>
+                        <option value="off">BLUR: OFF</option>
+                    </select>
+                </div>
+
+                <div class="dice-container" id="diceContainer"></div>
+
+                <div class="score-board">
+                    <div class="score-side minus-side">
+                        <button class="score-btn" onclick="changeScore(-1, event)">-1</button>
+                        <button class="score-btn" onclick="changeScore(-0.20, event)">-0.20</button>
+                        <button class="score-btn" onclick="changeScore(-5, event)">-5</button>
+                    </div>
+
+                    <div class="center-score" id="totalScore">0</div>
+
+                    <div class="score-side plus-side">
+                        <button class="score-btn" onclick="changeScore(1, event)">+1</button>
+                        <button class="score-btn" onclick="changeScore(0.20, event)">+0.20</button>
+                        <button class="score-btn" onclick="changeScore(5, event)">+5</button>
+                    </div>
+                </div>
+
+                <button class="roll-btn" id="rollBtn" onclick="rollDice(event)">ROLL AGAIN !</button>
+
+                <div class="possible-colors-bar" onclick="preventRoll(event)">
+                    Possible colors are: <span style="color:#ff4444">Red</span>, <span style="color:#ff8800">Orange</span>, <span style="color:#ffd600">Yellow</span>, <span style="color:#00c853">Green</span>, <span style="color:#0088ff">Blue</span>, and <span style="color:#ab47bc">Purple</span>.
+                </div>
+
+                <div class="history-container" onclick="preventRoll(event)">
+                    <div class="history-title">Last rolls</div>
+                    <ul class="history-list" id="historyList"></ul>
+                </div>
+            </div>
+
+            <!-- SAĞ PANEL (6 YAYINCI) -->
+            <div class="streamers-panel" onclick="preventRoll(event)">
+                <h2 class="streamers-header">Our Top Streamers</h2>
+                <div class="streamers-list">
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">RAKANO</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@rakanootrades</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">MARIOKS</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@marioks_12</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">NEXUS</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@nexus_live</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">BLAZE</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@blaze_stream</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1614680376593-902f749f7ba0?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">KRONOS</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@kronos_tv</span>
+                        </div>
+                    </div>
+                    <div class="streamer-card">
+                        <img src="https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80" class="avatar" alt="User">
+                        <div class="streamer-info">
+                            <div class="streamer-name-row"><span class="streamer-name">VIPER</span><span class="verified-badge">✓</span></div>
+                            <span class="streamer-tag">@viper_gaming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SOL RENK SEÇİMİ PANELİ -->
+    <div class="settings-panel-left" onclick="preventRoll(event)">
+        <select id="leftColorSelect" onclick="preventRoll(event)">
+            <option value="none" selected>Normal</option>
+            <option value="Green">Green</option>
+            <option value="Blue">Blue</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Red">Red</option>
+            <option value="Purple">Purple</option>
+            <option value="Orange">Orange</option>
+        </select>
+    </div>
+
+    <!-- SAĞ RENK SEÇİMİ PANELİ -->
+    <div class="settings-panel-right" onclick="preventRoll(event)">
+        <select id="bottomColorSelect" onclick="preventRoll(event)">
+            <option value="none" selected>Normal</option>
+            <option value="Green">Green</option>
+            <option value="Blue">Blue</option>
+            <option value="Yellow">Yellow</option>
+            <option value="Red">Red</option>
+            <option value="Purple">Purple</option>
+            <option value="Orange">Orange</option>
+        </select>
+    </div>
+
+    <script>
+        const colorMap = {
+            'Blue': '#0088ff', 'Red': '#ff4444', 'Green': '#00c853',
+            'Purple': '#9c27b0', 'Yellow': '#ffd600', 'Orange': '#ff8800'
+        };
+
+        const allColors = ['Blue', 'Red', 'Green', 'Purple', 'Yellow', 'Orange'];
+        let rollCount = 0;
+        let currentScore = 0;
+        let audioCtx = null;
+        let isRolling = false;
+
+        function preventRoll(e) { e.stopPropagation(); }
+
+        document.addEventListener('click', function() { rollDice(); });
+
+        // KLAVYE KISAYOLLARI (Sol ve Sağ Paneller İçin)
+        document.addEventListener('keydown', function(e) { 
+            if (e.code === 'Space') { 
+                e.preventDefault(); 
+                rollDice(); 
+                return;
+            }
+
+            const leftSelect = document.getElementById('leftColorSelect');
+            const rightSelect = document.getElementById('bottomColorSelect');
+            const key = e.key.toLowerCase();
+
+            // SOL ADMIN PANEL KISAYOLLARI (Rakamlar)
+            if (key === '0') {
+                leftSelect.value = 'none';
+            } else if (key === '1') {
+                leftSelect.value = 'Red';
+            } else if (key === '2') {
+                leftSelect.value = 'Green';
+            } else if (key === '3') {
+                leftSelect.value = 'Purple';
+            } else if (key === '4') {
+                leftSelect.value = 'Yellow';
+            } else if (key === '5') {
+                leftSelect.value = 'Orange';
+            } else if (key === '6') {
+                leftSelect.value = 'Blue';
+            }
+
+            // SAĞ ADMIN PANEL KISAYOLLARI (Harfler)
+            if (key === 'g') {
+                rightSelect.value = 'Green';
+            } else if (key === 'b') {
+                rightSelect.value = 'Blue';
+            } else if (key === 'y') {
+                rightSelect.value = 'Yellow';
+            } else if (key === 'r') {
+                rightSelect.value = 'Red';
+            } else if (key === 'p') {
+                rightSelect.value = 'Purple';
+            } else if (key === 'o') {
+                rightSelect.value = 'Orange';
+            } else if (key === 'n') {
+                rightSelect.value = 'none';
+            }
+        });
+
+        function changeBgColor() {
+            const val = document.getElementById('bgColorSelect').value;
+            if (val === 'default') {
+                document.body.style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.25)), url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80")';
+                document.body.style.backgroundColor = 'transparent';
+            } else {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundColor = val;
+            }
+        }
+
+        function updateDiceCount() {
+            if (isRolling) return;
+            const count = parseInt(document.getElementById('diceCountSelect').value);
+            const container = document.getElementById('diceContainer');
+            const isBlurOn = document.getElementById('blurToggle').value === 'on';
+            container.innerHTML = '';
+
+            for (let i = 1; i <= count; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'dice-wrapper';
+
+                const dice = document.createElement('div');
+                dice.className = 'dice' + (isBlurOn ? ' blurred' : '');
+                dice.id = 'dice' + i;
+
+                const label = document.createElement('div');
+                label.className = 'color-label';
+                label.id = 'label' + i;
+
+                const randomColorName = allColors[Math.floor(Math.random() * allColors.length)];
+                dice.style.backgroundColor = colorMap[randomColorName];
+                label.textContent = randomColorName.toUpperCase();
+
+                wrapper.appendChild(dice);
+                wrapper.appendChild(label);
+                container.appendChild(wrapper);
+            }
+        }
+
+        function playGPeryaSound(durationMs) {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            const now = audioCtx.currentTime;
+            for (let i = 0; i < 30; i++) {
+                const clickTime = now + (i * 0.055);
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(400 + Math.random() * 300, clickTime);
+                osc.frequency.exponentialRampToValueAtTime(80, clickTime + 0.03);
+                gain.gain.setValueAtTime(0.2, clickTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, clickTime + 0.03);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(clickTime);
+                osc.stop(clickTime + 0.03);
+            }
+        }
+
+        function changeScore(amount, e) {
+            if (e) e.stopPropagation();
+            currentScore += amount;
+            currentScore = Math.round(currentScore * 100) / 100;
+            const display = document.getElementById('totalScore');
+            display.textContent = currentScore > 0 ? '+' + currentScore : currentScore;
+        }
+
+        function toggleBlur() {
+            const isBlurOn = document.getElementById('blurToggle').value === 'on';
+            const count = parseInt(document.getElementById('diceCountSelect').value);
+            
+            for (let i = 1; i <= count; i++) {
+                const dice = document.getElementById('dice' + i);
+                if (dice) {
+                    if (isBlurOn) dice.classList.add('blurred');
+                    else dice.classList.remove('blurred');
+                }
+            }
+
+            document.querySelectorAll('.scene-dice').forEach(sDice => {
+                if (isBlurOn) sDice.classList.add('blurred');
+                else sDice.classList.remove('blurred');
+            });
+
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                if (isBlurOn) dot.classList.add('blurred');
+                else dot.classList.remove('blurred');
+            });
+        }
+
+        function rollDice(e) {
+            if (e) e.stopPropagation();
+            if (isRolling) return;
+
+            isRolling = true;
+            const rollDuration = 1600; 
+            const isBlurOn = document.getElementById('blurToggle').value === 'on';
+            playGPeryaSound(rollDuration);
+
+            const count = parseInt(document.getElementById('diceCountSelect').value);
+            
+            const forcedColor = document.getElementById('leftColorSelect').value;
+            const forbiddenColor = document.getElementById('bottomColorSelect').value;
+
+            let generalAvailableColors = allColors.filter(c => c !== forbiddenColor);
+            if (generalAvailableColors.length === 0) generalAvailableColors = [...allColors];
+
+            const rolledColors = [];
+
+            for (let i = 0; i < count; i++) {
+                const randomColorName = generalAvailableColors[Math.floor(Math.random() * generalAvailableColors.length)];
+                rolledColors.push({ name: randomColorName, hex: colorMap[randomColorName] });
+            }
+
+            if (forcedColor !== 'none' && forcedColor !== forbiddenColor) {
+                const forcedIndex = Math.floor(Math.random() * count);
+                rolledColors[forcedIndex] = { name: forcedColor, hex: colorMap[forcedColor] };
+
+                const otherAvailable = generalAvailableColors.filter(c => c !== forcedColor);
+                if (otherAvailable.length > 0) {
+                    for (let i = 0; i < count; i++) {
+                        if (i !== forcedIndex && rolledColors[i].name === forcedColor) {
+                            const newRandom = otherAvailable[Math.floor(Math.random() * otherAvailable.length)];
+                            rolledColors[i] = { name: newRandom, hex: colorMap[newRandom] };
+                        }
+                    }
+                }
+            }
+
+            document.getElementById('topScene').scrollIntoView({ behavior: 'auto' });
+
+            const sceneContainer = document.getElementById('sceneDiceContainer');
+            sceneContainer.innerHTML = '';
+
+            for (let i = 0; i < count; i++) {
+                const sDice = document.createElement('div');
+                sDice.className = 'scene-dice rolling' + (isBlurOn ? ' blurred' : '');
+                sDice.style.backgroundColor = '#ffffff';
+                sceneContainer.appendChild(sDice);
+            }
+
+            const topScene = document.getElementById('topScene');
+            topScene.classList.remove('spawn-anim');
+            void topScene.offsetWidth;
+            topScene.classList.add('spawn-anim');
+
+            for (let i = 1; i <= count; i++) {
+                const dice = document.getElementById('dice' + i);
+                const label = document.getElementById('label' + i);
+                
+                dice.className = 'dice rolling' + (isBlurOn ? ' blurred' : '');
+                dice.style.backgroundColor = '#ffffff';
+                label.textContent = '...';
+            }
+
+            setTimeout(() => {
+                const layout = document.getElementById('layoutWrapper');
+                
+                for (let i = 1; i <= count; i++) {
+                    const dice = document.getElementById('dice' + i);
+                    const label = document.getElementById('label' + i);
+                    
+                    dice.className = 'dice' + (isBlurOn ? ' blurred' : '');
+                    dice.style.backgroundColor = rolledColors[i - 1].hex;
+                    label.textContent = rolledColors[i - 1].name.toUpperCase();
+                }
+
+                document.getElementById('rollBtn').scrollIntoView({ behavior: 'auto', block: 'center' });
+
+                layout.classList.remove('spawn-anim');
+                void layout.offsetWidth;
+                layout.classList.add('spawn-anim');
+
+                rollCount++;
+                addHistoryRecord(rollCount, rolledColors);
+                isRolling = false;
+
+            }, rollDuration);
+        }
+
+        function addHistoryRecord(count, colors) {
+            const historyList = document.getElementById('historyList');
+            const li = document.createElement('li');
+            li.className = 'history-item';
+
+            const countSpan = document.createElement('span');
+            countSpan.textContent = '#' + count;
+
+            const dotsContainer = document.createElement('div');
+            dotsContainer.className = 'history-colors';
+            const isBlurOn = document.getElementById('blurToggle').value === 'on';
+
+            colors.forEach(item => {
+                const dot = document.createElement('span');
+                dot.className = 'color-dot' + (isBlurOn ? ' blurred' : '');
+                dot.style.backgroundColor = item.hex;
+                dotsContainer.appendChild(dot);
+            });
+
+            li.appendChild(countSpan);
+            li.appendChild(dotsContainer);
+            historyList.insertBefore(li, historyList.firstChild);
+        }
+
+        window.onload = () => {
+            updateDiceCount();
+            document.getElementById('rollBtn').scrollIntoView({ behavior: 'auto', block: 'center' });
+        };
+    </script>
+</body>
+</html>
